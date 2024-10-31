@@ -6,14 +6,14 @@ import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-react'
+import { ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react'
 import  EditItem  from '@/components/edititem'
 
 export default function Page(){
 
     const pb = new PocketBase("http://172.16.15.148:8080/")
     const [data, setData] = useState([])
-    const [dane, setDane] = useState({ nazwa: null, opis: null, cena: null })
+    const [dane, setDane] = useState({ nazwa: null, opis: null, cena: null,likes:null,dislikes:null })
     const [zdjecie,setZdjecie] = useState(null)
 
     useEffect(() => {
@@ -53,6 +53,7 @@ export default function Page(){
         formData.append("opis",dane.opis)
         formData.append("zdjecie",zdjecie)
 
+        console.log(formData)
         const record = await pb.collection('gry').create(formData);
         setData((prevData)=>{
             return(
@@ -95,28 +96,22 @@ export default function Page(){
         console.log("index " + index)
     }
 
-    // function addToDb(){
-    //     const nazwa = document.getElementById("nazwa").value
-    //     const opis = document.getElementById("opis").value
-    //     const cena = document.getElementById("cena").value
-    //     // const zdjecie = document.getElementById("zdjecie").value
+        const likeUp = async (gra) => {
+            const updatedGra = { ...gra, likes: gra.likes + 1 };
+            const record = await pb.collection('gry').update(gra.id, { likes: updatedGra.likes });
+            updateItem(record);
+        }
 
-    //     parseInt(cena)
-    //     // writeString(zdjecie)
-
-    //     const dataToSend = {
-    //         "nazwa" : nazwa,
-    //         "opis" : opis,
-    //         "cena" : cena,
-    //         // "zdjecie" : zdjecie,
-    //     }
-    //     const finalData = pb.collection('gry').create(dataToSend);
-    //        }
+        const likeDown = async (gra) => {
+            const updatedGra = { ...gra, dislikes: gra.dislikes + 1 };
+            const record = await pb.collection('gry').update(gra.id, { dislikes: updatedGra.dislikes });
+            updateItem(record);
+        }
 
     return (
         <div className="flex flex-wrap gap-4 justify-center">
             {data && data.map((gra, idx) => (
-                <Card key={idx} className="w-[35vh] h-[45vh] flex flex-col mb-10">
+                <Card key={idx} className="w-[35vh] h-[55vh] flex flex-col mb-10">
                     <CardHeader>
                         <CardTitle>{gra.nazwa}</CardTitle>
                         <CardDescription className="text-justify">{gra.opis}</CardDescription>
@@ -127,6 +122,13 @@ export default function Page(){
                     </CardContent>
                     <CardFooter>
                         <div className='w-full flex justify-end'>
+
+                            <Label>{gra.likes}</Label>
+                            <ThumbsUp onClick={() => likeUp(gra)}></ThumbsUp>
+
+                            <Label>{gra.dislikes}</Label>
+                            <ThumbsDown onClick={() => likeDown(gra)}></ThumbsDown>
+
                             <EditItem  gra={gra} onupdate={updateItem}>
                                 
                             </EditItem>
@@ -154,7 +156,7 @@ export default function Page(){
                     />
 
                     <Label htmlFor="cena">cena</Label>
-                    <Input 
+                    <Input
                         onChange={(e) => form(e, "cena")}
                         type="number" id="cena" placeholder="cena"
                     />
