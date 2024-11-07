@@ -25,7 +25,10 @@ import { Input } from "@/components/ui/input";
 import { Trigger } from "@radix-ui/react-dialog";
 
 export default function GamesKopia() {
-	const pb = new PocketBase("http://127.0.0.1:8090");
+	const pb = new PocketBase
+	// ("http://127.0.0.1:8090")
+	("http://172.16.15.148:8080/")
+	;
 	const [data, setData] = useState([]);
 	const [newCar, setNewCar] = useState({
 		model: "",
@@ -100,7 +103,6 @@ export default function GamesKopia() {
 			const record = await pb.collection("samochody").create(formData);
 			setData([record, ...data]);
 			setAddDialogOpen(false);
-			// Reset the form after adding a car
 			setNewCar({
 				model: "",
 				cena: "",
@@ -128,8 +130,8 @@ export default function GamesKopia() {
 			setData((prev) =>
 				prev.map((data) => (data.id === updatedCar.id ? updatedCar : data))
 			);
-			setEditingCar(null); // Close editing
-			setZdjecie(null); // Reset photo after editing
+			setEditingCar(null);
+			setZdjecie(null);
 		} catch (error) {
 			console.error("Error updating car:", error);
 		}
@@ -137,8 +139,8 @@ export default function GamesKopia() {
 
 	const startEditingCar = (car) => {
 		setEditingCar({ ...car });
-		setAddDialogOpen(false); // Close add dialog when starting to edit
-		setZdjecie(null); // Reset image when editing
+		setAddDialogOpen(false);
+		setZdjecie(null);
 	};
 
 	return (
