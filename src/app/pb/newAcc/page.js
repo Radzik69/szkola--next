@@ -1,3 +1,4 @@
+// newAcc/page.js
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,104 +9,75 @@ import PocketBase from "pocketbase";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const pb = new PocketBase("http://172.16.15.148:8080/");
-  const router = useRouter();
-  const [login, setLogin] = useState(null);
-  const [pass, setPass] = useState(null);
-  const [username, setUsername] = useState(null);
-  const [zdjecie, setZdjecie] = useState(null);
-  const [error, setError] = useState(false);
+	const pb = new PocketBase("http://127.0.0.1:8090/");
+	const router = useRouter();
+	const [email, setEmail] = useState("");
+	const [pass, setPass] = useState("");
+	const [username, setUsername] = useState("");
+	const [zdjecie, setZdjecie] = useState(null);
+	const [error, setError] = useState(false);
 
-  const handleLogin = (e) => {
-    setLogin(e.target.value);
-  };
+	const handleButton = async () => {
+		const formData = new FormData();
+		formData.append("username", username);
+		formData.append("email", email);
+		formData.append("password", pass);
+		formData.append("passwordConfirm", pass);
+		if (zdjecie) formData.append("avatar", zdjecie);
 
-  const handlePass = (e) => {
-    setPass(e.target.value);
-  };
+		try {
+			await pb.collection("users").create(formData);
+			router.push("/pb/login");
+		} catch (error) {
+			console.log("Error creating account:", error);
+			setError(true);
+		}
+	};
 
-  const handleUsername = (e) => {
-    setUsername(e.target.value);
-  };
+	return (
+		<div className="w-full h-[40vh] flex justify-center mt-5">
+			<Card className="w-[400px] h-[400px] p-5">
+				<h1>Create New Account</h1>
+				<Label htmlFor="username">Username</Label>
+				<Input
+					type="text"
+					id="username"
+					placeholder="Username"
+					onChange={(e) => setUsername(e.target.value)}
+				/>
 
-  const handleZdjecie = (e) => {
-    setZdjecie(e.target.files[0]);
-  };
+				<Label htmlFor="email">Email</Label>
+				<Input
+					type="email"
+					id="email"
+					placeholder="Email"
+					onChange={(e) => setEmail(e.target.value)}
+				/>
 
-  const handleButton = async () => {
-    try {
-      
-      //   formData.append("avatar", zdjecie);
+				<Label htmlFor="pass">Password</Label>
+				<Input
+					type="password"
+					id="pass"
+					placeholder="Password"
+					onChange={(e) => setPass(e.target.value)}
+				/>
 
-      const data = {
-        "username": {username},
-        "email": {login},
-        "emailVisibility": true,
-        "password": {pass},
-        "passwordConfirm": {pass},
-        "name": "test"
-    };
+				<Label htmlFor="zdjecie">Profile Picture</Label>
+				<Input
+					type="file"
+					id="zdjecie"
+					onChange={(e) => setZdjecie(e.target.files[0])}
+				/>
 
-      await pb.collection("users").create(data);
-      router.push("./");
-    } catch (error) {
-      console.log(error);
-      setError(true);
-    }
-  };
-
-  return (
-    <div>
-      {pb.authStore.isValid ? (
-        <p>Jestes Zalogowany</p>
-      ) : (
-        <div className="w-full h-[40vh] flex justify-center mt-5">
-          <Card className="w-[400px] h-[400px] p-5">
-            <h1>Login</h1>
-            <br></br>
-            <Label htmlFor="username">Username</Label>
-            <Input
-              type="text"
-              id="username"
-              placeholder="Username"
-              onChange={(e) => {
-                handleUsername(e);
-              }}
-            />
-            <Label htmlFor="pass">Password</Label>
-            <Input
-              type="password"
-              id="pass"
-              placeholder="Password"
-              onChange={(e) => {
-                handlePass(e);
-              }}
-            />
-            <Label htmlFor="email">Email</Label>
-            <Input
-              type="text"
-              id="email"
-              placeholder="Email"
-              onChange={(e) => {
-                handleLogin(e);
-              }}
-            />
-            <Label htmlFor="zdjecie">Profile Picture</Label>
-            <Input
-              type="file"
-              id="image"
-              onChange={(e) => {
-                handleZdjecie(e);
-              }}
-            />
-
-            <Button onClick={handleButton} className="w-full mt-5">
-              Login
-            </Button>
-            {error && <p>Nie udało sie zaloowac</p>}
-          </Card>
-        </div>
-      )}
-    </div>
-  );
+				<Button onClick={handleButton} className="w-full mt-5">
+					Create Account
+				</Button>
+				{error && (
+					<p className="text-red-500 mt-2">
+						Failed to create account. Please try again.
+					</p>
+				)}
+			</Card>
+		</div>
+	);
 }
